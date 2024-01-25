@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import AxiosCookieJarSupport from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import fs from 'fs'
@@ -22,7 +22,6 @@ import { Version } from './Version'
 export interface APIClientConfiguration {
   baseURL: string
   apiKey: string
-  axiosConfig?: AxiosRequestConfig
 }
 
 export class APIClient {
@@ -55,10 +54,6 @@ export class APIClient {
       withCredentials: true
     }
 
-    if (cfg.axiosConfig !== undefined && cfg.axiosConfig !== null) {
-      clientCfg = { ...clientCfg, ...cfg.axiosConfig }
-    }
-
     debugLog(() => [
       'APIClient: building axios client with',
       `config=${JSON.stringify(clientCfg)}`
@@ -70,7 +65,7 @@ export class APIClient {
     this.client.defaults.jar = new CookieJar()
 
     if (debugEnabled) {
-      this.client.interceptors.request.use((r: AxiosRequestConfig): AxiosRequestConfig => {
+      this.client.interceptors.request.use((r) => {
         debugLog(() => [
           'APIClient: request',
           r.method?.toUpperCase(),
@@ -81,7 +76,7 @@ export class APIClient {
         return r
       })
 
-      this.client.interceptors.response.use((r: AxiosResponse): AxiosResponse => {
+      this.client.interceptors.response.use((r) => {
         debugLog(() => [
           'APIClient: response',
           `status=${r.status}`,
