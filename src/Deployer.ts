@@ -261,7 +261,7 @@ export class Deployer {
           throw err
         }
 
-        const errCode = err.response?.data?.code
+        const errCode = (err.response?.data as any).code || null
         if (errCode !== APIErrorDuplicateName) {
           debugLog(() => [
             'Deployer: received an unexpected conflict error during app',
