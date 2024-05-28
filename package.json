@@ -1,12 +1,12 @@
 {
-  "name": "@rstudio/rsconnect-ts",
+  "name": "@rstudio/rsconnect-ts-custom",
   "version": "0.6.3",
-  "description": "TypeScript client library for the Posit Connect API",
+  "description": "TypeScript client library for the Posit Connect API - Forked Custom Package",
   "author": "RStudio Developers <support+rsconnect-ts@rstudio.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rstudio/rsconnect-ts.git"
+    "url": "git+https://github.com/nupurhattekar/rsconnect-ts-custom"
   },
   "main": "lib/main.js",
   "types": "lib/main.d.ts",
@@ -35,7 +35,7 @@
     "@types/tar": "^4.0.5",
     "@types/tmp": "^0.2.3",
     "@types/tough-cookie": "^4.0.2",
-    "axios": "^0.27.2",
+    "axios": "0.28.1",
     "axios-cookiejar-support": "^1.0.1",
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
@@ -54,14 +54,15 @@
     "@types/tar": "^4.0.4",
     "@types/tmp": "^0.2.0",
     "@types/tough-cookie": "^4.0.0",
-    "axios": "^0.27.2",
+    "axios": "0.28.1",
     "axios-cookiejar-support": "^1.0.1",
     "lodash": "^4.17.20",
     "qs": "^6.9.4",
     "tar": "^6.0.5",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "@rstudio/rsconnect-ts-custom": "github:nupurhattekar/rsconnect-ts-custom#active-branch"
   },
   "resolutions": {
-    "axios": "^0.27.2"
+    "axios": "0.28.1"
   }
 }
