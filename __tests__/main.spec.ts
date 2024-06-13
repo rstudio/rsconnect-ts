@@ -8,7 +8,7 @@ import * as rsconnect from '../src/main'
 jest.setTimeout(1000 * 60 * 2)
 
 const SEED_ADMIN_CONFIG: rsconnect.APIClientConfiguration = {
-  apiKey: 'f1wc3w4090uv67yhud7j08zjzgvt7yfg',
+  apiKey: '21232f297a57a5a743894a0e4a801fc3',
   baseURL: 'http://127.0.0.1:23939/__api__'
 }
 
