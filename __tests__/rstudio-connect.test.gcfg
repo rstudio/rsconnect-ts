@@ -4,7 +4,7 @@
 DataDir = /data
 EmailProvider = print
 DatabaseEmailSettings = true
-Address = http://localhost:23939
+Address = http://127.0.0.1:23939
 
 [Authentication]
 Provider = password
