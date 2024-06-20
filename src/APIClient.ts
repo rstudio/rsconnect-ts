@@ -111,10 +111,10 @@ export class APIClient {
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async updateAppVanityURL (appID: number, vanityURL: string): Promise<VanityRecordResponse> {
-    return await this.client.post(
-            `applications/${appID}/vanities`,
-            { app_id: appID, path_prefix: vanityURL }
+  public async setContentVanityURL (contentGUID: string, vanityURL: string): Promise<VanityRecordResponse> {
+    return await this.client.put(
+            `v1/content/${contentGUID}/vanity`,
+            { path: vanityURL }
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 

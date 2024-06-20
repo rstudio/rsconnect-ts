@@ -156,7 +156,7 @@ export class Deployer {
         `path=${JSON.stringify(resolvedAppPath)}`
       ].join(' '))
 
-      await this.client.updateAppVanityURL(app.id, resolvedAppPath)
+      await this.client.setContentVanityURL(app.guid, resolvedAppPath)
         .catch((err: any) => {
           debugLog(() => [
             'Deployer: failed to update vanity URL for',
