@@ -29,13 +29,13 @@ distclean: clean
 
 .PHONY: up
 up: .require-license
-	docker-compose port connect 3939 2>/dev/null | if ! grep -q ':23939$$'; then \
-		docker-compose up -d --wait; \
+	docker compose port connect 3939 2>/dev/null | if ! grep -q ':23939$$'; then \
+		docker compose up -d --wait; \
 	fi
 
 .PHONY: down
 down:
-	docker-compose down --remove-orphans
+	docker compose down --remove-orphans
 
 .PHONY: .require-license
 .require-license:
