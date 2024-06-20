@@ -13,15 +13,11 @@ InsecureDefaultUserAPIKey = true
 APIKeyBcryptCost = 4
 
 [Database]
-Provider = Postgres
 SeedUsers = true
 
 [HTTP]
 Listen = :3939
 NoWarning = true
-
-[Postgres]
-URL = postgres://postgres:notasecret@db/postgres?sslmode=disable
 
 [Python]
 Enabled = true
