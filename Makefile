@@ -25,7 +25,7 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -rf __tests__/data/*
+	rm -rf .cache/data
 
 .PHONY: up
 up: .require-license

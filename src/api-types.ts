@@ -102,9 +102,7 @@ export interface ListApplicationsResponse {
 }
 
 export interface VanityRecordResponse {
-  id?: number
-  appId: number
-  appGuid: string
-  pathPrefix: string
-  createdTime?: Date
+  contentGuid: string
+  path: string
+  createdTime: Date
 }
