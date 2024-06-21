@@ -9,6 +9,6 @@
     "outDir": "./lib",
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "__tests__/**/*.spec.ts", "__tests__/data/**/*", "lib/**/*"],
+  "exclude": ["node_modules", "__tests__/**/*.spec.ts", ".cache/**/*", "lib/**/*"],
   "extends": "@tsconfig/node16/tsconfig.json"
 }
