@@ -1,19 +1,11 @@
-version: '3.7'
-
 services:
-  db:
-    image: postgres:12
-    volumes:
-      - ./.cache/pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: notasecret
   connect:
     privileged: true
-    depends_on:
-      - db
-    # TODO: when available
-    # image: rstudio/rstudio-connect:1.8.6
-    image: rstudio/rstudio-connect:1.8.4.2-2
+    image: rstudio/rstudio-connect:ubuntu2204-2024.05.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3939/"]
+      start_period: 30s
+      start_interval: 1s
     volumes:
       - ./.cache/data:/data
       - ./__tests__/rstudio-connect.test.gcfg:/etc/rstudio-connect/rstudio-connect.gcfg
