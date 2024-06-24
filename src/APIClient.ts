@@ -1,5 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import AxiosCookieJarSupport from 'axios-cookiejar-support'
+import axios, { AxiosInstance, AxiosResponse } from 'axios'
+import { wrapper as AxiosCookieJarSupport } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import fs from 'fs'
 import qs from 'qs'
@@ -22,7 +22,6 @@ import { Version } from './Version'
 export interface APIClientConfiguration {
   baseURL: string
   apiKey: string
-  axiosConfig?: AxiosRequestConfig
 }
 
 export class APIClient {
@@ -33,7 +32,8 @@ export class APIClient {
     this.cfg = cfg
 
     const versionString: string = Version.toString()
-    let clientCfg = {
+
+    const clientCfg = {
       baseURL: this.cfg.baseURL,
       headers: {
         common: {
@@ -52,11 +52,7 @@ export class APIClient {
           }
         )
       },
-      withCredentials: true
-    }
-
-    if (cfg.axiosConfig !== undefined && cfg.axiosConfig !== null) {
-      clientCfg = { ...clientCfg, ...cfg.axiosConfig }
+      jar: new CookieJar()
     }
 
     debugLog(() => [
@@ -64,13 +60,10 @@ export class APIClient {
       `config=${JSON.stringify(clientCfg)}`
     ].join(' '))
 
-    this.client = axios.create(clientCfg)
-
-    AxiosCookieJarSupport(this.client)
-    this.client.defaults.jar = new CookieJar()
+    this.client = AxiosCookieJarSupport(axios.create(clientCfg))
 
     if (debugEnabled) {
-      this.client.interceptors.request.use((r: AxiosRequestConfig): AxiosRequestConfig => {
+      this.client.interceptors.request.use((r) => {
         debugLog(() => [
           'APIClient: request',
           r.method?.toUpperCase(),
@@ -81,7 +74,7 @@ export class APIClient {
         return r
       })
 
-      this.client.interceptors.response.use((r: AxiosResponse): AxiosResponse => {
+      this.client.interceptors.response.use((r) => {
         debugLog(() => [
           'APIClient: response',
           `status=${r.status}`,
