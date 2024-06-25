@@ -1,6 +1,6 @@
 {
   "name": "@rstudio/rsconnect-ts",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "TypeScript client library for the Posit Connect API",
   "author": "RStudio Developers <support+rsconnect-ts@rstudio.com>",
   "license": "MIT",
