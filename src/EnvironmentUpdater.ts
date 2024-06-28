@@ -1,6 +1,5 @@
 import { APIClient } from './APIClient'
 import { Environment } from './Environment'
-import { AppEnvironmentResponse } from './api-types'
 import { debugLog } from './debugLog'
 
 export class EnvironmentUpdater {
@@ -10,14 +9,13 @@ export class EnvironmentUpdater {
     this.client = client
   }
 
-  public async updateAppEnvironment (appID: number, dir: string = '.'): Promise<Environment> {
+  public async updateAppEnvironment (appGUID: string, dir: string = '.'): Promise<string[]> {
     debugLog(() => [
-      'EnvironmentUpdater: updating environment for',
-      `app=${appID}`,
+      'EnvironmentUpdater: loading environment for',
+      `app=${appGUID}`,
       `dir=${dir}`
     ].join(' '))
 
-    const { version } = await this.client.getAppEnvironment(appID)
     const curDir = process.cwd()
     const env = new Environment()
 
@@ -31,33 +29,28 @@ export class EnvironmentUpdater {
     if (env.size === 0) {
       debugLog(() => [
         'EnvironmentUpdater: no environment variables found for',
-        `app=${appID}`,
+        `app=${appGUID}`,
         `dir=${dir}`
       ].join(' '))
-      return env
+    } else {
+      debugLog(() => [
+        'EnvironmentUpdater: updating environment for',
+        `app=${appGUID}`,
+        `dir=${dir}`
+      ].join(' '))
+
+      await this.client.updateAppEnvironment(appGUID, env)
     }
 
-    debugLog(() => [
-      'EnvironmentUpdater: updating environment based on',
-      `version=${version}`,
-      'for',
-      `app=${appID}`,
-      `dir=${dir}`
-    ].join(' '))
-
-    await this.client.updateAppEnvironment(appID, version, env)
-    return await this.client.getAppEnvironment(appID)
-      .then((resp: AppEnvironmentResponse) => {
+    return await this.client.getAppEnvironment(appGUID)
+      .then((resp: string[]) => {
         debugLog(() => [
-          'EnvironmentUpdater: converting env object to map',
+          'EnvironmentUpdater: active environment variables for',
+          `app=${appGUID}`,
           `resp=${JSON.stringify(resp)}`
         ].join(' '))
 
-        const newEnv = new Environment()
-        for (const key in resp.values) {
-          newEnv.set(key, resp.values[key])
-        }
-        return newEnv
+        return resp
       })
   }
 }
