@@ -74,8 +74,9 @@ describe('rsconnect', () => {
           .then(async (poller: rsconnect.ClientTaskPoller) => {
             for await (const result of poller.poll()) {
               expect(result).not.toBeNull()
-              expect(result.status).not.toBeNull()
-              expect(result.status.length).toBeGreaterThan(-1)
+              expect(result.output).not.toBeNull()
+              expect(result.output.length).toBeGreaterThan(-1)
+              // console.log(result.output)
             }
           })
           .catch((err: any) => {
@@ -97,8 +98,9 @@ describe('rsconnect', () => {
           .then(async (poller: rsconnect.ClientTaskPoller) => {
             for await (const result of poller.poll()) {
               expect(result).not.toBeNull()
-              expect(result.status).not.toBeNull()
-              expect(result.status.length).toBeGreaterThan(-1)
+              expect(result.output).not.toBeNull()
+              expect(result.output.length).toBeGreaterThan(-1)
+              // console.log(result.output)
             }
           })
           .catch((err: any) => {
