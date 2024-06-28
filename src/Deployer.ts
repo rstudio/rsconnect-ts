@@ -5,7 +5,7 @@ import { debugLog } from './debugLog'
 import { APIClient } from './APIClient'
 import { Bundle } from './Bundle'
 import { Bundler } from './Bundler'
-import { Application, ClientTaskResponse, ListApplicationsResponse } from './api-types'
+import { Application, ClientTaskV0Response, ListApplicationsResponse } from './api-types'
 import { ApplicationPather } from './ApplicationPather'
 
 export interface DeployManifestParams {
@@ -208,7 +208,7 @@ export class Deployer {
     ].join(' '))
 
     return await this.client.deployApp(app.id, uploadedBundle.id)
-      .then((ct: ClientTaskResponse) => {
+      .then((ct: ClientTaskV0Response) => {
         return {
           appGuid: app.guid,
           appId: app.id,

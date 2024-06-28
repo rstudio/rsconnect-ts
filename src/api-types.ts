@@ -54,7 +54,7 @@ export interface Application {
   git?: AppGitRecord
 }
 
-export interface ClientTaskResponse {
+export interface ClientTaskV0Response {
   id: string
   userId: number
   status: string[]
@@ -63,6 +63,21 @@ export interface ClientTaskResponse {
   code: number
   error: string
   lastStatus: number
+}
+
+export interface ClientTaskV1Params {
+  first?: number
+  wait?: number
+}
+
+export interface ClientTaskV1Response {
+  id: string
+  output: string[]
+  result?: ClientTaskResult
+  finished: boolean
+  code: number
+  error: string
+  last: number
 }
 
 export interface ClientTaskResult {
