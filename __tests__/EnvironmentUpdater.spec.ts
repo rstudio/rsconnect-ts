@@ -2,18 +2,25 @@ import * as rsconnect from '../src/main'
 
 describe('EnvironmentUpdater', () => {
   let eu: rsconnect.EnvironmentUpdater
+  let client: FakeAPIClient
 
   beforeEach(() => {
-    eu = new rsconnect.EnvironmentUpdater(new FakeAPIClient())
+    client = new FakeAPIClient()
+    eu = new rsconnect.EnvironmentUpdater(client)
     process.chdir = jest.fn()
   })
 
   describe('updateAppEnvironment', () => {
     it('works', async () => {
       process.env.CONNECT_ENV_SET_SECRET = 'eye of newt'
-      const env = await eu.updateAppEnvironment(42, './somewhar/up/er')
-      expect(env.get('MODE')).toBe('ludicrous')
-      expect(env.get('SECRET')).toBe('eye of newt')
+      const vars = await eu.updateAppEnvironment('the-content-guid', './somewhar/up/er')
+      expect(vars.sort((a, b) => a.localeCompare(b))).toStrictEqual(['MODE', 'SECRET'])
+      expect(client.fakeState).toStrictEqual({
+        'the-content-guid': {
+          MODE: 'ludicrous',
+          SECRET: 'eye of newt'
+        }
+      })
     })
   })
 })
@@ -27,31 +34,27 @@ class FakeAPIClient extends rsconnect.APIClient {
       apiKey: 'notAsEcRet'
     })
     this.fakeState = {
-      42: {
-        appId: 42,
-        version: 4,
-        values: {
-          MODE: 'ludicrous'
-        }
+      'the-content-guid': {
+        MODE: 'ludicrous'
       }
     }
   }
 
-  public async getAppEnvironment (appID: number): Promise<any> {
-    return this.fakeState[appID]
+  public async getAppEnvironment (appGUID: string): Promise<any> {
+    const state = this.fakeState[appGUID] !== undefined ? this.fakeState[appGUID] : {}
+    return Object.keys(state)
   }
 
-  public async updateAppEnvironment (appID: number, version: number, env: rsconnect.Environment): Promise<any> {
-    const origState = this.fakeState[appID] !== undefined ? this.fakeState[appID] : { values: {} }
-    this.fakeState[appID] = {
-      ...origState,
-      appId: appID,
-      version,
-      values: {
-        ...origState.values,
-        ...Object.fromEntries(env.entries())
+  public async updateAppEnvironment (appGUID: string, env: rsconnect.Environment): Promise<any> {
+    const state = this.fakeState[appGUID] !== undefined ? this.fakeState[appGUID] : {}
+    Array.from(env.keys()).forEach(key => {
+      const value = env.get(key)
+      if (value === null || value === undefined) {
+        state.delete(key)
+      } else {
+        state[key] = value
       }
-    }
-    return {}
+    })
+    this.fakeState[appGUID] = state
   }
 }

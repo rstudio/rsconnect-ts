@@ -7,7 +7,6 @@ import qs from 'qs'
 import { debugLog, debugEnabled } from './debugLog'
 import {
   Application,
-  AppEnvironmentResponse,
   ClientTaskResponse,
   ExtendedBundleResponse,
   ListApplicationsParams,
@@ -139,19 +138,17 @@ export class APIClient {
       })
   }
 
-  public async getAppEnvironment (appID: number): Promise<AppEnvironmentResponse> {
-    return await this.client.get(`applications/${appID}/environment`)
-      .then((resp: AxiosResponse) => {
-        const camelized = keysToCamel(resp.data)
-        camelized.values = resp.data.values
-        return camelized
-      })
+  public async getAppEnvironment (appGUID: string): Promise<string[]> {
+    return await this.client.get(`v1/content/${appGUID}/environment`)
+      .then((resp: AxiosResponse) => resp.data)
   }
 
-  public async updateAppEnvironment (appID: number, version: number, env: Environment): Promise<AxiosResponse> {
-    return await this.client.post(
-      `applications/${appID}/environment`,
-      { app_id: appID, version, values: Object.fromEntries(env.entries()) }
+  public async updateAppEnvironment (appGUID: string, env: Environment): Promise<AxiosResponse> {
+    return await this.client.patch(
+      `v1/content/${appGUID}/environment`,
+      Array.from(env.keys()).map(key => {
+        return { name: key, value: env.get(key) }
+      })
     )
   }
 
