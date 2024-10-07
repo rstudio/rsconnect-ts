@@ -1,20 +1,16 @@
 import { debugLog } from './debugLog'
 import { APIClient } from './APIClient'
-import { ClientTaskResponse } from './api-types'
+import { ClientTaskV1Response } from './api-types'
 
 export class ClientTaskPoller {
   private readonly client: APIClient
   private readonly taskId: string
-  private readonly sleepInterval: number
+  private readonly wait: number
 
-  constructor (client: APIClient, taskId: string, sleepInterval?: number) {
+  constructor (client: APIClient, taskId: string, wait?: number) {
     this.client = client
     this.taskId = taskId
-    this.sleepInterval = (
-      sleepInterval !== null && sleepInterval !== undefined
-        ? sleepInterval
-        : 500
-    )
+    this.wait = (wait !== null && wait !== undefined) ? wait : 1
   }
 
   public async * poll (timeout?: number): AsyncGenerator<ClientTaskPollResult> {
@@ -23,28 +19,26 @@ export class ClientTaskPoller {
         ? ((Date.now() / 1000 | 0) + timeout)
         : Infinity
     )
-    let lastStatus: number | undefined
+    let first: number | undefined
     while ((Date.now() / 1000 | 0) < pollTimeout) {
       if (this.taskId === '') {
         debugLog(() => 'ClientTaskPollResult: returning due to empty task id')
         return
       }
 
-      debugLog(() => `ClientTaskPollResult: sleeping ${JSON.stringify(this.sleepInterval)}`)
-      await this.sleepTick()
-
       debugLog(() => [
         'ClientTaskPollResult: getting',
         `task=${JSON.stringify(this.taskId)}`,
-        `lastStatus=${JSON.stringify(lastStatus)}`
+        `first=${JSON.stringify(first)}`,
+        `wait=${JSON.stringify(this.wait)}`
       ].join(' '))
 
-      const curTask: ClientTaskResponse = await this.client.getTask(
-        this.taskId, lastStatus
+      const curTask: ClientTaskV1Response = await this.client.getTask(
+        this.taskId, first, this.wait
       )
 
       const res = {
-        status: curTask.status,
+        output: curTask.output,
         type: curTask.result?.type,
         data: curTask.result?.data
       }
@@ -56,23 +50,17 @@ export class ClientTaskPoller {
 
       yield res
 
-      lastStatus = curTask.lastStatus
+      first = curTask.last
       if (curTask.finished) {
         debugLog(() => 'ClientTaskPollResult: returning due to finished')
         return
       }
     }
   }
-
-  private async sleepTick (): Promise<void> {
-    return await new Promise((resolve: any) => {
-      setTimeout(() => resolve(), this.sleepInterval)
-    })
-  }
 }
 
 export interface ClientTaskPollResult {
-  status: string[]
+  output: string[]
   type?: string
   data?: any
 }

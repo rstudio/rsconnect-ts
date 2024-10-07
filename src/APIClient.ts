@@ -7,7 +7,9 @@ import qs from 'qs'
 import { debugLog, debugEnabled } from './debugLog'
 import {
   Application,
-  ClientTaskResponse,
+  ClientTaskV0Response,
+  ClientTaskV1Params,
+  ClientTaskV1Response,
   ExtendedBundleResponse,
   ListApplicationsParams,
   ListApplicationsResponse,
@@ -117,7 +119,7 @@ export class APIClient {
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async deployApp (appID: number, bundleID: number): Promise<ClientTaskResponse> {
+  public async deployApp (appID: number, bundleID: number): Promise<ClientTaskV0Response> {
     return await this.client.post(
             `applications/${appID}/deploy`,
             { bundle: bundleID }
@@ -152,13 +154,13 @@ export class APIClient {
     )
   }
 
-  public async getTask (taskId: string, status?: number): Promise<ClientTaskResponse> {
-    return await this.client.get(
-            `tasks/${taskId}`,
-            status !== null && status !== undefined
-              ? { params: { first_status: status } }
-              : undefined
-    ).then((resp: AxiosResponse) => keysToCamel(resp.data))
+  public async getTask (taskId: string, first?: number, wait?: number): Promise<ClientTaskV1Response> {
+    const params: ClientTaskV1Params = {
+      first: (first !== null && first !== undefined) ? first : undefined,
+      wait: (wait !== null && wait !== undefined) ? wait : undefined
+    }
+    return await this.client.get(`v1/tasks/${taskId}`, { params })
+      .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
   public async getBundle (bundleId: number): Promise<ExtendedBundleResponse> {
