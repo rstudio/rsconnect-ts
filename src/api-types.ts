@@ -8,13 +8,6 @@ export interface AppGitRecord {
   lastError: string
 }
 
-export interface AppEnvironmentResponse {
-  appId: number
-  appGuid: string
-  version: number
-  values: any
-}
-
 export interface Application {
   id: number
   guid: string
