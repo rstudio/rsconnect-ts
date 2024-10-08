@@ -26,7 +26,7 @@ jobs:
       - run: make
       - run: git diff --exit-code
       - if: failure()
-        run: docker-compose logs
+        run: docker compose logs
       - run: make down
       - run: printf '//registry.npmjs.org/:_authToken=%s\n' "${NPM_AUTH_TOKEN}" | tee .npmrc
         env:
