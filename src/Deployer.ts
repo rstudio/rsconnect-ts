@@ -5,7 +5,7 @@ import { debugLog } from './debugLog'
 import { APIClient } from './APIClient'
 import { Bundle } from './Bundle'
 import { Bundler } from './Bundler'
-import { Application, ClientTaskV1Response, ListApplicationsResponse } from './api-types'
+import { Application, DeployV1Response, ListApplicationsResponse } from './api-types'
 import { ApplicationPather } from './ApplicationPather'
 
 export interface DeployManifestParams {
@@ -208,14 +208,14 @@ export class Deployer {
     ].join(' '))
 
     return await this.client.deployApp(app.guid, uploadedBundle.id)
-      .then((ct: ClientTaskV1Response) => {
+      .then((ct: DeployV1Response) => {
         return {
           appGuid: app.guid,
           appId: app.id,
           appName: app.name,
           appUrl: app.url,
           noOp: false,
-          taskId: ct.id,
+          taskId: ct.taskId,
           title: (
             app.title !== undefined && app.title !== null
               ? app.title
@@ -277,7 +277,7 @@ export class Deployer {
   }
 
   private async findExistingAppByName (name: string): Promise<Application> {
-    return await this.client.listApplications({ pageSize: 1, name })
+    return await this.client.listApplications({ name })
       .then((resp: ListApplicationsResponse): Application => {
         if (resp.applications.length < 1) {
           debugLog(() => [

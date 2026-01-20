@@ -9,6 +9,7 @@ import {
   Application,
   ClientTaskV1Params,
   ClientTaskV1Response,
+  DeployV1Response,
   ExtendedBundleResponse,
   ListApplicationsParams,
   ListApplicationsResponse,
@@ -118,7 +119,7 @@ export class APIClient {
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async deployApp (guid: string, bundleID: number): Promise<ClientTaskV1Response> {
+  public async deployApp (guid: string, bundleID: number): Promise<DeployV1Response> {
     return await this.client.post(
             `v1/content/${guid}/deploy`,
             { bundle_id: bundleID }
@@ -127,21 +128,15 @@ export class APIClient {
 
   public async listApplications (params?: ListApplicationsParams): Promise<ListApplicationsResponse> {
     const queryParams: Record<string, any> = {}
-    if (params?.pageSize !== undefined) {
-      queryParams.page_size = params.pageSize
-    }
-    if (params?.pageNumber !== undefined) {
-      queryParams.page_number = params.pageNumber
-    }
     if (params?.name !== undefined) {
       queryParams.name = params.name
     }
     return await this.client.get('v1/content', { params: queryParams })
       .then((resp: AxiosResponse) => {
-        const totalCount = parseInt(resp.headers['total-count'] ?? '0', 10)
+        const applications = (resp.data as any[]).map(keysToCamel)
         return {
-          applications: (resp.data as any[]).map(keysToCamel),
-          totalCount
+          applications,
+          totalCount: applications.length
         }
       })
   }

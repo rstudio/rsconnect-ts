@@ -11,49 +11,24 @@ export class ListApplicationsPager {
   }
 
   public async * listApplications (maxRecords?: number): AsyncGenerator<Application, unknown, unknown> {
-    let resetMaxRecords = false
-
     if (maxRecords === undefined || maxRecords === null || maxRecords <= 0) {
       maxRecords = Infinity
-      resetMaxRecords = true
     }
 
+    debugLog(() => 'ListApplicationsPager: fetching all applications')
+    const result = await this.client.listApplications()
+
     let n = 0
-    const pageSize = maxRecords < 100 ? maxRecords : 100
-    let pageNumber = 1
-
-    while (n < maxRecords) {
-      const pageParams = { pageSize, pageNumber }
-      debugLog(() => `ListApplicationsPager: fetching page of applications with pageParams: ${JSON.stringify(pageParams)}`)
-      const page = await this.client.listApplications(pageParams)
-
-      if (n === 0) {
-        if (resetMaxRecords || maxRecords > page.totalCount) {
-          debugLog(() => `ListApplicationsPager: setting max records to page totalCount: ${page.totalCount}`)
-          maxRecords = page.totalCount
-        }
-      }
-
-      if (page.applications.length === 0) {
-        debugLog(() => 'ListApplicationsPager: no more applications returned')
+    for (const app of result.applications) {
+      if (n >= maxRecords) {
+        debugLog(() => `ListApplicationsPager: breaking at max records limit ${(maxRecords as number).toString()}`)
         return n
       }
+      n++
 
-      for (let i = 0; i < page.applications.length; i++) {
-        if (n >= maxRecords) {
-          debugLog(() => `ListApplicationsPager: breaking at max records limit ${(maxRecords as number).toString()}`)
-          return n
-        }
-        n++
-
-        const appRecord = keysToCamel(page.applications[i])
-
-        debugLog(() => `ListApplicationsPager: yielding app record ${JSON.stringify(appRecord)}`)
-
-        yield appRecord
-      }
-
-      pageNumber++
+      const appRecord = keysToCamel(app)
+      debugLog(() => `ListApplicationsPager: yielding app record ${JSON.stringify(appRecord)}`)
+      yield appRecord
     }
 
     return n

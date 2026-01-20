@@ -63,6 +63,10 @@ export interface ClientTaskV1Params {
   wait?: number
 }
 
+export interface DeployV1Response {
+  taskId: string
+}
+
 export interface ClientTaskV1Response {
   id: string
   output: string[]
@@ -96,8 +100,6 @@ export interface ExtendedBundleResponse {
 }
 
 export interface ListApplicationsParams {
-  pageSize?: number
-  pageNumber?: number
   name?: string
 }
 
