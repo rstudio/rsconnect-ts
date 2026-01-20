@@ -5,7 +5,7 @@ import { debugLog } from './debugLog'
 import { APIClient } from './APIClient'
 import { Bundle } from './Bundle'
 import { Bundler } from './Bundler'
-import { Application, ClientTaskV0Response, ListApplicationsResponse } from './api-types'
+import { Application, ClientTaskV1Response, ListApplicationsResponse } from './api-types'
 import { ApplicationPather } from './ApplicationPather'
 
 export interface DeployManifestParams {
@@ -87,7 +87,7 @@ export class Deployer {
     const app = await this.findOrCreateByName(resolvedAppName)
 
     if (app.bundleId !== null && app.bundleId !== undefined) {
-      const existingBundle = await this.client.getBundle(app.bundleId)
+      const existingBundle = await this.client.getBundle(app.guid, app.bundleId)
 
       if (existingBundle.size !== null && existingBundle.size !== undefined) {
         existingBundleSize = existingBundle.size
@@ -187,28 +187,28 @@ export class Deployer {
     if (Object.keys(appUpdates).length !== 0) {
       debugLog(() => [
         'Deployer: updating',
-        `app=${JSON.stringify(app.id)}`,
+        `app=${JSON.stringify(app.guid)}`,
         `with=${JSON.stringify(appUpdates)}`
       ].join(' '))
-      await this.client.updateApp(app.id, appUpdates)
+      await this.client.updateApp(app.guid, appUpdates)
     }
 
     debugLog(() => [
       'Deployer: uploading bundle for',
-      `app=${JSON.stringify(app.id)}`,
+      `app=${JSON.stringify(app.guid)}`,
       `tarball=${JSON.stringify(bundle.tarballPath)}`
     ].join(' '))
 
-    const uploadedBundle = await this.client.uploadApp(app.id, bundle)
+    const uploadedBundle = await this.client.uploadApp(app.guid, bundle)
 
     debugLog(() => [
       'Deployer: deploying',
-      `app=${JSON.stringify(app.id)}`,
+      `app=${JSON.stringify(app.guid)}`,
       `bundle=${JSON.stringify(uploadedBundle.id)}`
     ].join(' '))
 
-    return await this.client.deployApp(app.id, uploadedBundle.id)
-      .then((ct: ClientTaskV0Response) => {
+    return await this.client.deployApp(app.guid, uploadedBundle.id)
+      .then((ct: ClientTaskV1Response) => {
         return {
           appGuid: app.guid,
           appId: app.id,
@@ -277,7 +277,7 @@ export class Deployer {
   }
 
   private async findExistingAppByName (name: string): Promise<Application> {
-    return await this.client.listApplications({ count: 1, filter: [`name:${name}`] })
+    return await this.client.listApplications({ pageSize: 1, name })
       .then((resp: ListApplicationsResponse): Application => {
         if (resp.applications.length < 1) {
           debugLog(() => [

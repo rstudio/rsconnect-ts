@@ -7,7 +7,6 @@ import qs from 'qs'
 import { debugLog, debugEnabled } from './debugLog'
 import {
   Application,
-  ClientTaskV0Response,
   ClientTaskV1Params,
   ClientTaskV1Response,
   ExtendedBundleResponse,
@@ -91,17 +90,17 @@ export class APIClient {
   }
 
   public async createApp (appName: string): Promise<Application> {
-    return await this.client.post('applications', { name: appName })
+    return await this.client.post('v1/content', { name: appName })
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async getApp (appID: number|string): Promise<Application> {
-    return await this.client.get(`applications/${appID}`)
+  public async getApp (guid: string): Promise<Application> {
+    return await this.client.get(`v1/content/${guid}`)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async updateApp (appID: number|string, updates: any): Promise<Application> {
-    return await this.client.post(`applications/${appID}`, updates)
+  public async updateApp (guid: string, updates: any): Promise<Application> {
+    return await this.client.patch(`v1/content/${guid}`, updates)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
@@ -112,30 +111,37 @@ export class APIClient {
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async uploadApp (appID: number, bundle: Bundle): Promise<ExtendedBundleResponse> {
+  public async uploadApp (guid: string, bundle: Bundle): Promise<ExtendedBundleResponse> {
     return await this.client.post(
-            `applications/${appID}/upload`,
+            `v1/content/${guid}/bundles`,
             fs.createReadStream(bundle.tarballPath)
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async deployApp (appID: number, bundleID: number): Promise<ClientTaskV0Response> {
+  public async deployApp (guid: string, bundleID: number): Promise<ClientTaskV1Response> {
     return await this.client.post(
-            `applications/${appID}/deploy`,
-            { bundle: bundleID }
+            `v1/content/${guid}/deploy`,
+            { bundle_id: bundleID }
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
   public async listApplications (params?: ListApplicationsParams): Promise<ListApplicationsResponse> {
-    return await this.client.get('applications', { params })
+    const queryParams: Record<string, any> = {}
+    if (params?.pageSize !== undefined) {
+      queryParams.page_size = params.pageSize
+    }
+    if (params?.pageNumber !== undefined) {
+      queryParams.page_number = params.pageNumber
+    }
+    if (params?.name !== undefined) {
+      queryParams.name = params.name
+    }
+    return await this.client.get('v1/content', { params: queryParams })
       .then((resp: AxiosResponse) => {
-        const data = resp.data
-        const { applications, count, total, continuation } = data
+        const totalCount = parseInt(resp.headers['total-count'] ?? '0', 10)
         return {
-          applications: applications.map(keysToCamel),
-          count,
-          total,
-          continuation
+          applications: (resp.data as any[]).map(keysToCamel),
+          totalCount
         }
       })
   }
@@ -163,8 +169,8 @@ export class APIClient {
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async getBundle (bundleId: number): Promise<ExtendedBundleResponse> {
-    return await this.client.get(`bundles/${bundleId.toString()}`)
+  public async getBundle (contentGuid: string, bundleId: number): Promise<ExtendedBundleResponse> {
+    return await this.client.get(`v1/content/${contentGuid}/bundles/${bundleId}`)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 

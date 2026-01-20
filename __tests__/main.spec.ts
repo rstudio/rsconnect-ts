@@ -40,9 +40,8 @@ describe('rsconnect', () => {
       const client = new rsconnect.APIClient(SEED_ADMIN_CONFIG)
       return await client.listApplications()
         .then((resp: ListApplicationsResponse) => {
-          expect(resp.count).not.toBeNull()
-          expect(resp.total).not.toBeNull()
-          expect(resp.continuation).not.toBeNull()
+          expect(resp.applications).not.toBeNull()
+          expect(resp.totalCount).not.toBeNull()
         })
     })
 

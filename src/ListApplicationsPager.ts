@@ -19,21 +19,24 @@ export class ListApplicationsPager {
     }
 
     let n = 0
-    const pageParams = {
-      start: 0,
-      count: maxRecords < 100 ? maxRecords : 100,
-      cont: ''
-    }
+    const pageSize = maxRecords < 100 ? maxRecords : 100
+    let pageNumber = 1
 
-    while (pageParams.start < maxRecords) {
+    while (n < maxRecords) {
+      const pageParams = { pageSize, pageNumber }
       debugLog(() => `ListApplicationsPager: fetching page of applications with pageParams: ${JSON.stringify(pageParams)}`)
       const page = await this.client.listApplications(pageParams)
 
       if (n === 0) {
-        if (resetMaxRecords || maxRecords > page.total) {
-          debugLog(() => `ListApplicationsPager: setting max records to page total: ${page.total}`)
-          maxRecords = page.total
+        if (resetMaxRecords || maxRecords > page.totalCount) {
+          debugLog(() => `ListApplicationsPager: setting max records to page totalCount: ${page.totalCount}`)
+          maxRecords = page.totalCount
         }
+      }
+
+      if (page.applications.length === 0) {
+        debugLog(() => 'ListApplicationsPager: no more applications returned')
+        return n
       }
 
       for (let i = 0; i < page.applications.length; i++) {
@@ -50,8 +53,7 @@ export class ListApplicationsPager {
         yield appRecord
       }
 
-      pageParams.cont = page.continuation
-      pageParams.start += pageParams.count
+      pageNumber++
     }
 
     return n

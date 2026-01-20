@@ -96,17 +96,14 @@ export interface ExtendedBundleResponse {
 }
 
 export interface ListApplicationsParams {
-  count?: number
-  start?: number
-  cont?: string
-  filter?: string[]
+  pageSize?: number
+  pageNumber?: number
+  name?: string
 }
 
 export interface ListApplicationsResponse {
   applications: Application[]
-  count: number
-  total: number
-  continuation: string
+  totalCount: number
 }
 
 export interface VanityRecordResponse {
