@@ -16,7 +16,9 @@ jobs:
           - 20.x
         connect-version:
           - preview
-          - "2022.10.0"
+          # This version is the first Docker image that has R 4.3, which the
+          # example app requires.
+          - "2024.05.0"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
