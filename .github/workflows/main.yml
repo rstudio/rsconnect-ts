@@ -5,8 +5,6 @@ on:
     tags: [v*]
   pull_request:
     branches: [main]
-env:
-  RSC_LICENSE: ${{ secrets.RSC_LICENSE }}
 jobs:
   main:
     strategy:
@@ -16,6 +14,9 @@ jobs:
         node:
           - 18.x
           - 20.x
+        connect-version:
+          - preview
+          - "2022.10.0"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -23,16 +24,19 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: make
+      - run: npm run lint
+      - run: npm run build
+      - uses: posit-dev/with-connect@main
+        with:
+          license: ${{ secrets.CONNECT_LICENSE_FILE }}
+          version: ${{ matrix.connect-version }}
+          command: npm test
       - run: git diff --exit-code
-      - if: failure()
-        run: docker compose logs
-      - run: make down
       - run: printf '//registry.npmjs.org/:_authToken=%s\n' "${NPM_AUTH_TOKEN}" | tee .npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
       - run: npm info
-      - if: matrix.node == '20.x' && startsWith(github.ref, 'refs/tags')
+      - if: matrix.node == '20.x' && matrix.connect-version == 'preview' && startsWith(github.ref, 'refs/tags')
         run: npm publish
-      - if: startsWith(github.ref, 'refs/heads')
+      - if: matrix.connect-version == 'preview' && startsWith(github.ref, 'refs/heads')
         run: npm publish --dry-run

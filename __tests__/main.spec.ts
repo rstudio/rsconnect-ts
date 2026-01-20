@@ -8,8 +8,8 @@ import * as rsconnect from '../src/main'
 jest.setTimeout(1000 * 60 * 2)
 
 const SEED_ADMIN_CONFIG: rsconnect.APIClientConfiguration = {
-  apiKey: '21232f297a57a5a743894a0e4a801fc3',
-  baseURL: 'http://127.0.0.1:23939/__api__'
+  apiKey: process.env.CONNECT_API_KEY as string,
+  baseURL: `${process.env.CONNECT_SERVER as string}/__api__`
 }
 
 describe('rsconnect', () => {
@@ -107,6 +107,39 @@ describe('rsconnect', () => {
             console.trace(err)
           })
       })
+    })
+  })
+
+  describe('EnvironmentUpdater', () => {
+    it('updateAppEnvironment', async () => {
+      // Deploy an app to get a valid appGUID
+      const top = execSync('git rev-parse --show-toplevel').toString().trim()
+      const plumberManifest = path.join(top, '__tests__/apps/plumber/manifest.json')
+      const client = new rsconnect.APIClient(SEED_ADMIN_CONFIG)
+      const deployer = new rsconnect.Deployer(client)
+
+      const deployResp = await deployer.deployManifest({
+        manifestPath: plumberManifest,
+        appIdentifier: '/env-updater-test'
+      })
+      expect(deployResp.appGuid).not.toBeNull()
+
+      // Wait for deployment to complete
+      const poller = new rsconnect.ClientTaskPoller(client, deployResp.taskId)
+      for await (const result of poller.poll()) {
+        expect(result).not.toBeNull()
+      }
+
+      // Set environment variables using EnvironmentUpdater
+      process.env.CONNECT_ENV_SET_TEST_VAR = 'test-value'
+      const envUpdater = new rsconnect.EnvironmentUpdater(client)
+      const envVars = await envUpdater.updateAppEnvironment(deployResp.appGuid)
+
+      // Verify the environment variable was set
+      expect(envVars).toContain('TEST_VAR')
+
+      // Clean up
+      delete process.env.CONNECT_ENV_SET_TEST_VAR
     })
   })
 })
