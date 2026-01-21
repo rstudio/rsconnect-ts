@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  main:
+  test:
     strategy:
       matrix:
         os:
@@ -21,8 +21,8 @@ jobs:
           - "2024.05.0"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
@@ -34,11 +34,22 @@ jobs:
           version: ${{ matrix.connect-version }}
           command: npm test
       - run: git diff --exit-code
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+      - run: npm install
+      - run: npm run build
       - run: printf '//registry.npmjs.org/:_authToken=%s\n' "${NPM_AUTH_TOKEN}" | tee .npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
       - run: npm info
-      - if: matrix.node == '20.x' && matrix.connect-version == 'preview' && startsWith(github.ref, 'refs/tags')
+      - if: startsWith(github.ref, 'refs/tags')
         run: npm publish
-      - if: matrix.connect-version == 'preview' && startsWith(github.ref, 'refs/heads')
+      - if: startsWith(github.ref, 'refs/heads')
         run: npm publish --dry-run
