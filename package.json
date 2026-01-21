@@ -21,7 +21,6 @@
     "access": "public"
   },
   "scripts": {
-    "prebuild": "node -e \"const p=require('./package.json'); const fs=require('fs'); fs.writeFileSync('src/Version.ts', '// WARNING: this file is generated\\nexport const Version = \\\"' + p.version + '\\\"\\n')\"",
     "build": "tsc",
     "lint": "ts-standard --fix ./src/*.ts ./__tests__/*.ts",
     "test": "jest"
@@ -43,12 +42,12 @@
     "@types/tar": "^6.1.13",
     "@types/tmp": "^0.2.6",
     "@types/tough-cookie": "^4.0.5",
+    "tough-cookie": "^4.1.4",
     "axios": "^1.7.2",
     "axios-cookiejar-support": "^5.0.2",
     "lodash": "^4.17.21",
     "qs": "^6.12.1",
     "tar": "^6.2.1",
-    "tmp": "^0.2.3",
-    "tough-cookie": "^4.1.4"
+    "tmp": "^0.2.3"
   }
 }
