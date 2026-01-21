@@ -1,4 +1,4 @@
-RSC_LICENSE ?=
+CONNECT_LICENSE_FILE ?= rstudio-connect.lic
 SHELL := bash
 VERSION := $(shell node -e 'console.log(require("$(CURDIR)/package.json").version)')
 
@@ -6,7 +6,11 @@ npm-%:
 	npm run $*
 
 .PHONY: all
-all: up npm-lint lib/main.js npm-test
+all: npm-lint lib/main.js test
+
+.PHONY: test
+test:
+	uvx with-connect --license "$(CONNECT_LICENSE_FILE)" -- npm test
 
 .PHONY: publish
 publish: lib/main.js
@@ -26,19 +30,3 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -rf .cache/
-
-.PHONY: up
-up: .require-license
-	docker compose port connect 3939 2>/dev/null | if ! grep -q ':23939$$'; then \
-		docker compose up -d --wait; \
-	fi
-
-.PHONY: down
-down:
-	docker compose down --remove-orphans
-
-.PHONY: .require-license
-.require-license:
-ifndef RSC_LICENSE
-	$(error Missing required RSC_LICENSE env var)
-endif
