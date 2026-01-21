@@ -21,7 +21,6 @@
     "access": "public"
   },
   "scripts": {
-    "prebuild": "node -e \"const p=require('./package.json'); const fs=require('fs'); fs.writeFileSync('src/Version.ts', '// WARNING: this file is generated\\nexport const Version = \\\"' + p.version + '\\\"\\n')\"",
     "build": "tsc",
     "lint": "ts-standard --fix ./src/*.ts ./__tests__/*.ts",
     "test": "jest"
