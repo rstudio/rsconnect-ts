@@ -148,7 +148,7 @@ export class Deployer {
       }
     }
 
-    if (!app.vanityUrl && resolvedAppPath !== '') {
+    if ((app.vanityUrl === undefined || app.vanityUrl === '') && resolvedAppPath !== '') {
       debugLog(() => [
         'Deployer: attempting to update vanity URL for',
         `app=${JSON.stringify(app.id)}`,
