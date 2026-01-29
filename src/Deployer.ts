@@ -281,7 +281,7 @@ export class Deployer {
           throw err
         }
 
-        return this.findExistingContentByName(name)
+        return await this.findExistingContentByName(name)
       })
   }
 

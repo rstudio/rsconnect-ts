@@ -37,7 +37,7 @@ export class Environment extends Map {
     }
   }
 
-  public loadFileEnv (): string|null {
+  public loadFileEnv (): string | null {
     const candidateFiles = [
       process.env.CONNECT_ENV_FILE
     ].concat(Environment.CANDIDATE_FILES)
@@ -47,7 +47,7 @@ export class Environment extends Map {
       `candidates=${JSON.stringify(candidateFiles)}`
     ].join(' '))
 
-    let envFile: string|null = null
+    let envFile: string | null = null
 
     for (const candidateFile of candidateFiles) {
       if (candidateFile === undefined) {

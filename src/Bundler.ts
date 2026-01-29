@@ -1,5 +1,5 @@
 import path from 'path'
-import tar from 'tar'
+import * as tar from 'tar'
 
 import { Bundle } from './Bundle'
 import { Manifest } from './Manifest'

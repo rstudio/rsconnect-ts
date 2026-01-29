@@ -21,7 +21,7 @@ export class ListContentPager {
     let n = 0
     for (const item of result.content) {
       if (n >= maxRecords) {
-        debugLog(() => `ListContentPager: breaking at max records limit ${(maxRecords as number).toString()}`)
+        debugLog(() => `ListContentPager: breaking at max records limit ${(maxRecords).toString()}`)
         return n
       }
       n++
