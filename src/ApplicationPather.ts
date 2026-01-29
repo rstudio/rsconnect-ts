@@ -79,14 +79,14 @@ export class ApplicationPather {
     )
     return inSlashes
       .replace(/\.\//g, '/')
-      .replace(new RegExp('( +|[^-_a-z0-9/])', 'ig'), '_')
+      .replace(/( +|[^-_a-z0-9/])/ig, '_')
       .replace(/\/\//g, '/')
       .replace(/\/_+/, '/_')
   }
 
   private pathFromGitRemoteURL (gitRemoteURL: string): string {
     let rawURL = gitRemoteURL
-    if (gitRemoteURL.match(new RegExp('[^/]+:[^/]+')) !== null) {
+    if (gitRemoteURL.match(/[^/]+:[^/]+/) !== null) {
       rawURL = 'ssh://' + gitRemoteURL.replace(/:/, '/')
     }
 
