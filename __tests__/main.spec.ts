@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios'
 import { execSync } from 'child_process'
 import path from 'path'
 
-import { ListApplicationsResponse } from '../src/api-types'
+import { ListContentResponse } from '../src/api-types'
 import * as rsconnect from '../src/main'
 
 jest.setTimeout(1000 * 60 * 2)
@@ -35,24 +35,24 @@ describe('rsconnect', () => {
     })
   })
 
-  describe('applications API', () => {
-    it('listApplications', async () => {
+  describe('content API', () => {
+    it('listContent', async () => {
       const client = new rsconnect.APIClient(SEED_ADMIN_CONFIG)
-      return await client.listApplications()
-        .then((resp: ListApplicationsResponse) => {
-          expect(resp.applications).not.toBeNull()
+      return await client.listContent()
+        .then((resp: ListContentResponse) => {
+          expect(resp.content).not.toBeNull()
           expect(resp.totalCount).not.toBeNull()
         })
     })
 
-    describe('ListApplicationsPager', () => {
-      it('listApplications', async () => {
+    describe('ListContentPager', () => {
+      it('listContent', async () => {
         const client = new rsconnect.APIClient(SEED_ADMIN_CONFIG)
-        const pager = new rsconnect.ListApplicationsPager(client)
-        const appGen = pager.listApplications()
-        // TODO: seed some applications so that this will iterate
-        for await (const app of appGen) {
-          expect(app).not.toBeNull()
+        const pager = new rsconnect.ListContentPager(client)
+        const contentGen = pager.listContent()
+        // TODO: seed some content so that this will iterate
+        for await (const item of contentGen) {
+          expect(item).not.toBeNull()
         }
       })
     })

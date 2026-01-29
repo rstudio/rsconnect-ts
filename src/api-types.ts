@@ -1,61 +1,13 @@
-export interface AppGitRecord {
-  id: number
-  repositoryUrl: string
-  branch: string
-  contentPath: string
-  lastKnownCommit: string
-  enabled: boolean
-  lastError: string
-}
-
-export interface Application {
-  id: number
+export interface Content {
   guid: string
-  accessType: string
-  connectionTimeout?: number
-  readTimeout?: number
-  initTimeout?: number
-  idleTimeout?: number
-  maxProcesses?: number
-  minProcesses?: number
-  maxConnsPerProcess?: number
-  loadFactor?: number
-  url: string
-  vanityUrl: boolean
+  id: string
   name: string
   title?: string
-  bundleId?: number
-  appMode: number
-  contentCategory: string
-  hasParameters: boolean
-  createdTime: Date
-  lastDeployedTime: Date
-  rVersion?: string
-  pyVersion?: string
-  buildStatus: number
-  runAs?: string
-  runAsCurrentUser: boolean
-  description: string
-  appRole: string
-  ownerFirstName: string
-  ownerLastName: string
-  ownerUsername: string
-  ownerGuid: string
-  ownerEmail: string
-  ownerLocked: boolean
-  isScheduled: boolean
-  git?: AppGitRecord
-}
-
-export interface ClientTaskV0Response {
-  id: string
-  userId: number
-  status: string[]
-  result?: ClientTaskResult
-  finished: boolean
-  code: number
-  error: string
-  lastStatus: number
+  contentUrl?: string
+  dashboardUrl?: string
+  bundleId?: string
+  vanityUrl?: string
+  accessType?: string
 }
 
 export interface ClientTaskV1Params {
@@ -87,8 +39,8 @@ export interface ExtendedBundleMetadata {
 }
 
 export interface ExtendedBundleResponse {
-  id: number
-  appId: number
+  id: string
+  contentGuid: string
   createdTime: Date
   updatedTime: Date
   rVersion?: string
@@ -99,12 +51,12 @@ export interface ExtendedBundleResponse {
   metadata?: ExtendedBundleMetadata
 }
 
-export interface ListApplicationsParams {
+export interface ListContentParams {
   name?: string
 }
 
-export interface ListApplicationsResponse {
-  applications: Application[]
+export interface ListContentResponse {
+  content: Content[]
   totalCount: number
 }
 

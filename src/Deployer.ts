@@ -5,7 +5,7 @@ import { debugLog } from './debugLog'
 import { APIClient } from './APIClient'
 import { Bundle } from './Bundle'
 import { Bundler } from './Bundler'
-import { Application, DeployV1Response, ListApplicationsResponse } from './api-types'
+import { Content, DeployV1Response, ListContentResponse } from './api-types'
 import { ApplicationPather } from './ApplicationPather'
 
 export interface DeployManifestParams {
@@ -26,7 +26,7 @@ export interface DeployBundleParams {
 
 export interface DeployTaskResponse {
   appGuid: string
-  appId: number
+  appId: string
   appName: string
   appUrl: string
   noOp: boolean
@@ -137,7 +137,7 @@ export class Deployer {
         appGuid: app.guid,
         appId: app.id,
         appName: app.name,
-        appUrl: app.url,
+        appUrl: app.dashboardUrl ?? '',
         noOp: true,
         taskId: '',
         title: (
@@ -190,7 +190,7 @@ export class Deployer {
         `app=${JSON.stringify(app.guid)}`,
         `with=${JSON.stringify(appUpdates)}`
       ].join(' '))
-      await this.client.updateApp(app.guid, appUpdates)
+      await this.client.updateContent(app.guid, appUpdates)
     }
 
     debugLog(() => [
@@ -199,7 +199,7 @@ export class Deployer {
       `tarball=${JSON.stringify(bundle.tarballPath)}`
     ].join(' '))
 
-    const uploadedBundle = await this.client.uploadApp(app.guid, bundle)
+    const uploadedBundle = await this.client.uploadBundle(app.guid, bundle)
 
     debugLog(() => [
       'Deployer: deploying',
@@ -207,13 +207,13 @@ export class Deployer {
       `bundle=${JSON.stringify(uploadedBundle.id)}`
     ].join(' '))
 
-    return await this.client.deployApp(app.guid, uploadedBundle.id)
+    return await this.client.deployContent(app.guid, uploadedBundle.id)
       .then((ct: DeployV1Response) => {
         return {
           appGuid: app.guid,
           appId: app.id,
           appName: app.name,
-          appUrl: app.url,
+          appUrl: app.dashboardUrl ?? '',
           noOp: false,
           taskId: ct.taskId,
           title: (
@@ -237,7 +237,7 @@ export class Deployer {
     )
   }
 
-  private async findOrCreateByName (name: string): Promise<Application> {
+  private async findOrCreateByName (name: string): Promise<Content> {
     if (name.length === 36 && name.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/) !== null) {
       debugLog(() => [
         'Deployer: treating',
@@ -245,15 +245,15 @@ export class Deployer {
         'as a GUID'
       ].join(' '))
 
-      return await this.client.getApp(name)
+      return await this.client.getContent(name)
     }
 
-    return await this.client.createApp(name)
-      .then((app: Application): Application => app)
-      .catch(async (err: AxiosError): Promise<Application> => {
+    return await this.client.createContent(name)
+      .then((content: Content): Content => content)
+      .catch(async (err: AxiosError): Promise<Content> => {
         if (err.response?.status !== 409) {
           debugLog(() => [
-            'Deployer: received an unexpected error response during app',
+            'Deployer: received an unexpected error response during content',
             'creation with',
             `name=${JSON.stringify(name)}`,
             `data=${JSON.stringify(err.response?.data)}`
@@ -264,7 +264,7 @@ export class Deployer {
         const errCode = (err.response?.data as any).code ?? null
         if (errCode !== APIErrorDuplicateName) {
           debugLog(() => [
-            'Deployer: received an unexpected conflict error during app',
+            'Deployer: received an unexpected conflict error during content',
             'creation with',
             `name=${JSON.stringify(name)}`,
             `data=${JSON.stringify(err.response?.data)}`
@@ -272,21 +272,21 @@ export class Deployer {
           throw err
         }
 
-        return this.findExistingAppByName(name)
+        return this.findExistingContentByName(name)
       })
   }
 
-  private async findExistingAppByName (name: string): Promise<Application> {
-    return await this.client.listApplications({ name })
-      .then((resp: ListApplicationsResponse): Application => {
-        if (resp.applications.length < 1) {
+  private async findExistingContentByName (name: string): Promise<Content> {
+    return await this.client.listContent({ name })
+      .then((resp: ListContentResponse): Content => {
+        if (resp.content.length < 1) {
           debugLog(() => [
-            'Deployer: failed to find application with',
+            'Deployer: failed to find content with',
             `name=${JSON.stringify(name)}`
           ].join(' '))
-          throw new Error(`no application with name=${JSON.stringify(name)}`)
+          throw new Error(`no content with name=${JSON.stringify(name)}`)
         }
-        return resp.applications[0]
+        return resp.content[0]
       })
   }
 
