@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
 import { wrapper as AxiosCookieJarSupport } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import fs from 'fs'
@@ -6,13 +6,13 @@ import qs from 'qs'
 
 import { debugLog, debugEnabled } from './debugLog'
 import {
-  Application,
-  ClientTaskV0Response,
+  Content,
   ClientTaskV1Params,
   ClientTaskV1Response,
+  DeployV1Response,
   ExtendedBundleResponse,
-  ListApplicationsParams,
-  ListApplicationsResponse,
+  ListContentParams,
+  ListContentResponse,
   VanityRecordResponse
 } from './api-types'
 import { Bundle } from './Bundle'
@@ -90,18 +90,18 @@ export class APIClient {
     return new URL(this.cfg.baseURL).pathname.replace('/__api__', '')
   }
 
-  public async createApp (appName: string): Promise<Application> {
-    return await this.client.post('applications', { name: appName })
+  public async createContent (name: string): Promise<Content> {
+    return await this.client.post('v1/content', { name })
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async getApp (appID: number|string): Promise<Application> {
-    return await this.client.get(`applications/${appID}`)
+  public async getContent (guid: string): Promise<Content> {
+    return await this.client.get(`v1/content/${guid}`)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async updateApp (appID: number|string, updates: any): Promise<Application> {
-    return await this.client.post(`applications/${appID}`, updates)
+  public async updateContent (guid: string, updates: any): Promise<Content> {
+    return await this.client.patch(`v1/content/${guid}`, updates)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
@@ -112,30 +112,42 @@ export class APIClient {
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async uploadApp (appID: number, bundle: Bundle): Promise<ExtendedBundleResponse> {
+  public async getContentVanityURL (contentGUID: string): Promise<string | null> {
+    return await this.client.get(`v1/content/${contentGUID}/vanity`)
+      .then((resp: AxiosResponse) => resp.data.path as string)
+      .catch((err: AxiosError) => {
+        if (err.response?.status === 404) {
+          return null
+        }
+        throw err
+      })
+  }
+
+  public async uploadBundle (guid: string, bundle: Bundle): Promise<ExtendedBundleResponse> {
     return await this.client.post(
-            `applications/${appID}/upload`,
+            `v1/content/${guid}/bundles`,
             fs.createReadStream(bundle.tarballPath)
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async deployApp (appID: number, bundleID: number): Promise<ClientTaskV0Response> {
+  public async deployContent (guid: string, bundleId: string): Promise<DeployV1Response> {
     return await this.client.post(
-            `applications/${appID}/deploy`,
-            { bundle: bundleID }
+            `v1/content/${guid}/deploy`,
+            { bundle_id: bundleId }
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async listApplications (params?: ListApplicationsParams): Promise<ListApplicationsResponse> {
-    return await this.client.get('applications', { params })
+  public async listContent (params?: ListContentParams): Promise<ListContentResponse> {
+    const queryParams: Record<string, any> = {}
+    if (params?.name !== undefined) {
+      queryParams.name = params.name
+    }
+    return await this.client.get('v1/content', { params: queryParams })
       .then((resp: AxiosResponse) => {
-        const data = resp.data
-        const { applications, count, total, continuation } = data
+        const content = (resp.data as any[]).map(keysToCamel)
         return {
-          applications: applications.map(keysToCamel),
-          count,
-          total,
-          continuation
+          content,
+          totalCount: content.length
         }
       })
   }
@@ -163,8 +175,8 @@ export class APIClient {
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
-  public async getBundle (bundleId: number): Promise<ExtendedBundleResponse> {
-    return await this.client.get(`bundles/${bundleId.toString()}`)
+  public async getBundle (contentGuid: string, bundleId: string): Promise<ExtendedBundleResponse> {
+    return await this.client.get(`v1/content/${contentGuid}/bundles/${bundleId}`)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
