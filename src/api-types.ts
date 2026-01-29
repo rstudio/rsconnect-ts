@@ -6,7 +6,6 @@ export interface Content {
   contentUrl?: string
   dashboardUrl?: string
   bundleId?: string
-  vanityUrl?: string
   accessType?: string
 }
 

@@ -148,27 +148,36 @@ export class Deployer {
       }
     }
 
-    if ((app.vanityUrl === undefined || app.vanityUrl === '') && resolvedAppPath !== '') {
-      debugLog(() => [
-        'Deployer: attempting to update vanity URL for',
-        `app=${JSON.stringify(app.id)}`,
-        'to',
-        `path=${JSON.stringify(resolvedAppPath)}`
-      ].join(' '))
+    if (resolvedAppPath !== '') {
+      const existingVanityUrl = await this.client.getContentVanityURL(app.guid)
+      if (existingVanityUrl === null) {
+        debugLog(() => [
+          'Deployer: attempting to update vanity URL for',
+          `app=${JSON.stringify(app.id)}`,
+          'to',
+          `path=${JSON.stringify(resolvedAppPath)}`
+        ].join(' '))
 
-      await this.client.setContentVanityURL(app.guid, resolvedAppPath)
-        .catch((err: any) => {
-          debugLog(() => [
-            'Deployer: failed to update vanity URL for',
-            `app=${JSON.stringify(app.id)}`,
-            `err=${JSON.stringify(err.message)}`,
-            `data=${JSON.stringify(err.response?.data)}`
-          ].join(' '))
+        await this.client.setContentVanityURL(app.guid, resolvedAppPath)
+          .catch((err: any) => {
+            debugLog(() => [
+              'Deployer: failed to update vanity URL for',
+              `app=${JSON.stringify(app.id)}`,
+              `err=${JSON.stringify(err.message)}`,
+              `data=${JSON.stringify(err.response?.data)}`
+            ].join(' '))
 
-          if (requireVanityPath === true) {
-            throw err
-          }
-        })
+            if (requireVanityPath === true) {
+              throw err
+            }
+          })
+      } else {
+        debugLog(() => [
+          'Deployer: vanity URL already set for',
+          `app=${JSON.stringify(app.id)}`,
+          `existingVanityUrl=${JSON.stringify(existingVanityUrl)}`
+        ].join(' '))
+      }
     }
 
     const appUpdates: any = {}

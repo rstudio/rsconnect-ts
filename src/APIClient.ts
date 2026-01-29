@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
 import { wrapper as AxiosCookieJarSupport } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import fs from 'fs'
@@ -96,7 +96,7 @@ export class APIClient {
   }
 
   public async getContent (guid: string): Promise<Content> {
-    return await this.client.get(`v1/content/${guid}`, { params: { include: 'vanity_url' } })
+    return await this.client.get(`v1/content/${guid}`)
       .then((resp: AxiosResponse) => keysToCamel(resp.data))
   }
 
@@ -110,6 +110,17 @@ export class APIClient {
             `v1/content/${contentGUID}/vanity`,
             { path: vanityURL }
     ).then((resp: AxiosResponse) => keysToCamel(resp.data))
+  }
+
+  public async getContentVanityURL (contentGUID: string): Promise<string | null> {
+    return await this.client.get(`v1/content/${contentGUID}/vanity`)
+      .then((resp: AxiosResponse) => resp.data.path as string)
+      .catch((err: AxiosError) => {
+        if (err.response?.status === 404) {
+          return null
+        }
+        throw err
+      })
   }
 
   public async uploadBundle (guid: string, bundle: Bundle): Promise<ExtendedBundleResponse> {
@@ -127,7 +138,7 @@ export class APIClient {
   }
 
   public async listContent (params?: ListContentParams): Promise<ListContentResponse> {
-    const queryParams: Record<string, any> = { include: 'vanity_url' }
+    const queryParams: Record<string, any> = {}
     if (params?.name !== undefined) {
       queryParams.name = params.name
     }
