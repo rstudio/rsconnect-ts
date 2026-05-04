@@ -8,7 +8,9 @@
     // types.
     "lib": ["es2022", "dom"],
     "outDir": "./lib",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "types": ["node"]
   },
   "exclude": ["node_modules", "__tests__/**/*.spec.ts", ".cache/**/*", "lib/**/*"],
   "extends": "@tsconfig/node22/tsconfig.json"
